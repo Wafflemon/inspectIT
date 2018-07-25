@@ -14,7 +14,7 @@ public interface IProxySubject {
 
 	/**
 	 * Provides the arguments which are passed to the super-constructor of a proxy.<br>
-	 * The types must match the types speified using the {@link ProxyFor} annotation.<br>
+	 * The types must match the types specified using the {@link ProxyFor} annotation.<br>
 	 * If the default constructor is used, please return an empty array.
 	 *
 	 * @return the arguments to pass to the super cosntructor.
