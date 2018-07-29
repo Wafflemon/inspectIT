@@ -21,6 +21,7 @@ import rocks.inspectit.shared.all.tracing.constants.ExtraTags;
  * @author Jacob Waffle
  *
  */
+@SuppressWarnings({"PMD.AvoidRethrowingException", "We want to rethrow exceptions."})
 @ProxyFor(implementedInterfaces = "java.util.function.BiConsumer")
 public class SpanStoreBiConsumer extends SpanStore implements IProxySubject, TagsProvidingAdapter {
 
@@ -33,7 +34,7 @@ public class SpanStoreBiConsumer extends SpanStore implements IProxySubject, Tag
 	 * Constructor.
 	 *
 	 * @param consumer
-	 *            original consumer which will be wrapped
+	 *            Original consumer which will be wrapped.
 	 */
 	public SpanStoreBiConsumer(final Object consumer) {
 		Preconditions.checkNotNull(consumer);
@@ -42,7 +43,7 @@ public class SpanStoreBiConsumer extends SpanStore implements IProxySubject, Tag
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object[] getProxyConstructorArguments() {
@@ -50,7 +51,7 @@ public class SpanStoreBiConsumer extends SpanStore implements IProxySubject, Tag
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void proxyLinked(final Object proxyObject, final IRuntimeLinker linker) {
@@ -79,7 +80,7 @@ public class SpanStoreBiConsumer extends SpanStore implements IProxySubject, Tag
 		// to the caller.
 		try {
 		    WBiConsumer.accept.call(this.consumer, arg0, arg1);
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
 		} finally {
 		    finishSpan(this);

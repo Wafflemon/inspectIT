@@ -44,8 +44,7 @@ public final class CompletableFutureClientSensorConfig extends AbstractRemoteSen
    * {@inheritDoc}
    */
   @Override
-  public boolean isServerSide()
-  {
+  public boolean isServerSide() {
     return false;
   }
 }

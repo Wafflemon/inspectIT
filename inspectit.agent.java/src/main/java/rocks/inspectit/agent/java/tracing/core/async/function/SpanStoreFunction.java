@@ -21,6 +21,7 @@ import rocks.inspectit.shared.all.tracing.constants.ExtraTags;
  * @author Jacob Waffle
  *
  */
+@SuppressWarnings({"PMD.AvoidRethrowingException", "We want to rethrow exceptions."})
 @ProxyFor(implementedInterfaces = "java.util.function.Function")
 public class SpanStoreFunction extends SpanStore implements IProxySubject, TagsProvidingAdapter {
 	
@@ -33,7 +34,7 @@ public class SpanStoreFunction extends SpanStore implements IProxySubject, TagsP
 	 * Constructor.
 	 *
 	 * @param function
-	 *            original function which will be wrapped
+	 *            Original function which will be wrapped.
 	 */
 	public SpanStoreFunction(final Object function) {
 		Preconditions.checkNotNull(function);
@@ -42,7 +43,7 @@ public class SpanStoreFunction extends SpanStore implements IProxySubject, TagsP
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object[] getProxyConstructorArguments() {
@@ -50,7 +51,7 @@ public class SpanStoreFunction extends SpanStore implements IProxySubject, TagsP
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void proxyLinked(final Object proxyObject, final IRuntimeLinker linker) {
@@ -66,8 +67,9 @@ public class SpanStoreFunction extends SpanStore implements IProxySubject, TagsP
 	}
 
 	/**
-     * Performs this operation on the given argument. 
+     * Performs this operation on the given argument and gets a result.  
      * @param arg0 The input argument.
+     * @return a result.
 	 */
 	@ProxyMethod(parameterTypes = { "java.lang.Object" })
 	public Object apply(final Object arg0) {
@@ -78,7 +80,7 @@ public class SpanStoreFunction extends SpanStore implements IProxySubject, TagsP
 		// to the caller.
 		try {
 		    result = WFunction.apply.call(function, arg0);
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
 		} finally {
 		    finishSpan(this);

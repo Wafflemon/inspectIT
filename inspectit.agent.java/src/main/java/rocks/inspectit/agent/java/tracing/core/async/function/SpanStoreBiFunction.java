@@ -21,6 +21,7 @@ import rocks.inspectit.shared.all.tracing.constants.ExtraTags;
  * @author Jacob Waffle
  *
  */
+@SuppressWarnings({"PMD.AvoidRethrowingException", "We want to rethrow exceptions."})
 @ProxyFor(implementedInterfaces = "java.util.function.BiFunction")
 public class SpanStoreBiFunction extends SpanStore implements IProxySubject, TagsProvidingAdapter {
 	
@@ -33,7 +34,7 @@ public class SpanStoreBiFunction extends SpanStore implements IProxySubject, Tag
 	 * Constructor.
 	 *
 	 * @param function
-	 *            original function which will be wrapped
+	 *            Original function which will be wrapped.
 	 */
 	public SpanStoreBiFunction(final Object function) {
 		Preconditions.checkNotNull(function);
@@ -42,7 +43,7 @@ public class SpanStoreBiFunction extends SpanStore implements IProxySubject, Tag
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object[] getProxyConstructorArguments() {
@@ -50,7 +51,7 @@ public class SpanStoreBiFunction extends SpanStore implements IProxySubject, Tag
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void proxyLinked(Object proxyObject, IRuntimeLinker linker) {
@@ -66,9 +67,10 @@ public class SpanStoreBiFunction extends SpanStore implements IProxySubject, Tag
 	}
 
 	/**
-     * Performs this operation on the given arguments. 
+     * Performs this operation on the given arguments and gets a result.
      * @param arg0 The first input argument.
      * @param arg1 The second input argument.
+     * @return a result.
 	 */
 	@ProxyMethod(parameterTypes = { "java.lang.Object", "java.lang.Object" })
 	public Object apply(final Object arg0, final Object arg1) {
@@ -79,7 +81,7 @@ public class SpanStoreBiFunction extends SpanStore implements IProxySubject, Tag
 		// to the caller.
 		try {
 		    result = WBiFunction.apply.call(function, arg0, arg1);
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
 		} finally {
 		    finishSpan(this);

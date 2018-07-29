@@ -21,6 +21,7 @@ import rocks.inspectit.shared.all.tracing.constants.ExtraTags;
  * @author Jacob Waffle
  *
  */
+@SuppressWarnings({"PMD.AvoidRethrowingException", "We want to rethrow exceptions."})
 @ProxyFor(implementedInterfaces = "java.util.function.Supplier")
 public class SpanStoreSupplier extends SpanStore implements IProxySubject, TagsProvidingAdapter {
 
@@ -33,7 +34,7 @@ public class SpanStoreSupplier extends SpanStore implements IProxySubject, TagsP
 	 * Constructor.
 	 *
 	 * @param supplier
-	 *            original supplier which will be wrapped
+	 *            Original supplier which will be wrapped.
 	 */
 	public SpanStoreSupplier(final Object supplier) {
 		Preconditions.checkNotNull(supplier);
@@ -42,7 +43,7 @@ public class SpanStoreSupplier extends SpanStore implements IProxySubject, TagsP
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Object[] getProxyConstructorArguments() {
@@ -50,7 +51,7 @@ public class SpanStoreSupplier extends SpanStore implements IProxySubject, TagsP
 	}
 
 	/**
-	 * {@inheritDoc}}
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void proxyLinked(final Object proxyObject, final IRuntimeLinker linker) {
@@ -78,7 +79,7 @@ public class SpanStoreSupplier extends SpanStore implements IProxySubject, TagsP
 		// to the caller.
 		try {
 		    result = WSupplier.get.call(supplier);
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw e;
 		} finally {
 		    finishSpan(this);

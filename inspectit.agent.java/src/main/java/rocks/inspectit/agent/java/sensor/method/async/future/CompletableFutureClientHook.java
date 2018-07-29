@@ -2,6 +2,7 @@ package rocks.inspectit.agent.java.sensor.method.async.future;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,9 @@ public class CompletableFutureClientHook implements IMethodHook {
 	 */
 	private static final String RUNNABLE_FQN    = "java.lang.Runnable";
 	
+	/**
+	 * A map of the supported functional interfaces that contain units of execution for the hooked {@link java.util.concurrent.CompletableFuture}.
+	 */
 	private static final Map<String, Class<? extends SpanStore>> FUNCTIONAL_FQNS = new HashMap<String, Class<? extends SpanStore>>();
 
 	/**
@@ -109,23 +113,29 @@ public class CompletableFutureClientHook implements IMethodHook {
 					spanStore = new SpanStoreRunnable(runnable);
 					spanStoreFQN = RUNNABLE_FQN;
 				} else {
-					
-					for (String functionalFQN : FUNCTIONAL_FQNS.keySet())
-					{
-						final Object functional = getParameter(parameters, rsc, functionalFQN);
+					for (Map.Entry<String, Class<? extends SpanStore>> entry : FUNCTIONAL_FQNS.entrySet()) {
+						final Object functional = getParameter(parameters, rsc, entry.getKey());
 						
-						if (null != functional)
-						{
+						if (null != functional) {
 							try {
-								spanStore = FUNCTIONAL_FQNS.get(functionalFQN).getConstructor(Object.class).newInstance(functional);
-							} catch (Throwable e) {
-								final StringWriter sw = new StringWriter();
-								final PrintWriter pw = new PrintWriter(sw);
-								e.printStackTrace(pw);
-								LOG.error(sw.toString());
+								spanStore = entry.getValue().getConstructor(Object.class).newInstance(functional);
+							} catch (RuntimeException e) {
+								LOG.error(toStracktrace(e));
+								return;
+							} catch (InstantiationException e) {
+								LOG.error(toStracktrace(e));
+								return;
+							} catch (IllegalAccessException e) {
+								LOG.error(toStracktrace(e));
+								return;
+							} catch (InvocationTargetException e) {
+								LOG.error(toStracktrace(e));
+								return;
+							} catch (NoSuchMethodException e) {
+								LOG.error(toStracktrace(e));
 								return;
 							}
-							spanStoreFQN = functionalFQN;
+							spanStoreFQN = entry.getKey();
 						}
 					}
 					
@@ -218,5 +228,18 @@ public class CompletableFutureClientHook implements IMethodHook {
 		if (index >= 0) {
 			parameters[index] = replacementParam;
 		}
+	}
+	
+	/**
+	 * Extracts a stracktrace out of the given throwable.
+	 * @param t 
+	 * 			The throwable containing the stacktrace. 
+	 * @return The throwable's stacktrace.
+	 */
+	private String toStracktrace(final Throwable t) {
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);
+		return pw.toString();
 	}
 }

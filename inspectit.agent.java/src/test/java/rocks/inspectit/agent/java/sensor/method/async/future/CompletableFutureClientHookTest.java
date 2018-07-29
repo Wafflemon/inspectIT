@@ -22,7 +22,6 @@ import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.SpanBuilderImpl;
 import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.SpanContextImpl;
 import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.SpanImpl;
 import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.TracerImpl;
-import rocks.inspectit.agent.java.tracing.core.async.SpanStore;
 import rocks.inspectit.agent.java.tracing.core.async.executor.SpanStoreRunnable;
 import rocks.inspectit.agent.java.tracing.core.listener.IAsyncSpanContextListener;
 import rocks.inspectit.shared.all.testbase.TestBase;
@@ -35,7 +34,7 @@ import rocks.inspectit.shared.all.tracing.data.PropagationType;
  * @author Jacob Waffle
  *
  */
-@SuppressWarnings({ "PMD" })
+@SuppressWarnings({"unchecked"})
 public class CompletableFutureClientHookTest extends TestBase {
 
 	@InjectMocks
