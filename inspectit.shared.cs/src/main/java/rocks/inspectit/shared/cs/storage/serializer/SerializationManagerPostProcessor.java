@@ -64,6 +64,7 @@ import rocks.inspectit.shared.cs.ci.sensor.method.impl.HttpSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.InvocationSequenceSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.Log4jLoggingSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.ApacheClientExchangeHandlerSensorConfig;
+import rocks.inspectit.shared.cs.ci.sensor.method.impl.CompletableFutureClientSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.PreparedStatementParameterSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.PreparedStatementSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.RemoteApacheHttpClientV40SensorConfig;
@@ -460,6 +461,9 @@ public class SerializationManagerPostProcessor implements BeanPostProcessor {
 		// INSPECTIT-2458
 		kryo.register(RemoteAsyncApacheHttpClientSensorConfig.class, new FieldSerializer<>(kryo, RemoteAsyncApacheHttpClientSensorConfig.class), nextRegistrationId++);
 		kryo.register(ApacheClientExchangeHandlerSensorConfig.class, new FieldSerializer<>(kryo, ApacheClientExchangeHandlerSensorConfig.class), nextRegistrationId++);
+		
+		// INESPECTIT-????
+		kryo.register(CompletableFutureClientSensorConfig.class, new FieldSerializer<>(kryo, CompletableFutureClientSensorConfig.class), nextRegistrationId++);
 	}
 
 }

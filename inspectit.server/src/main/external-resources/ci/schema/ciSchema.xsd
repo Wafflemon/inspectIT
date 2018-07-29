@@ -27,6 +27,8 @@
 
   <xs:element name="compilation-sensor-config" type="compilationSensorConfig"/>
 
+  <xs:element name="completable-future-client-sensor-config" type="completableFutureClientSensorConfig"/>
+
   <xs:element name="configuration-interface-import-data" type="configurationInterfaceImportData"/>
 
   <xs:element name="connection-sensor-config" type="connectionSensorConfig"/>
@@ -538,6 +540,7 @@
                   <xs:element ref="remote-spring-resttemplate-client-sensor-config"/>
                   <xs:element ref="remote-jms-client-sensor-config"/>
                   <xs:element ref="remote-manual-server-sensor-config"/>
+                  <xs:element ref="completable-future-client-sensor-config"/>
                   <xs:element ref="apache-client-exchange-handler-sensor"/>
                 </xs:choice>
               </xs:sequence>
@@ -785,6 +788,14 @@
   </xs:complexType>
 
   <xs:complexType name="remoteManualServerSensorConfig">
+    <xs:complexContent>
+      <xs:extension base="abstractRemoteSensorConfig">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="completableFutureClientSensorConfig" final="extension restriction">
     <xs:complexContent>
       <xs:extension base="abstractRemoteSensorConfig">
         <xs:sequence/>

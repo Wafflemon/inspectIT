@@ -12,6 +12,7 @@ import rocks.inspectit.shared.all.cmr.model.SensorTypeIdent;
 import rocks.inspectit.shared.cs.ci.sensor.exception.impl.ExceptionSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.AbstractRemoteSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.ApacheClientExchangeHandlerSensorConfig;
+import rocks.inspectit.shared.cs.ci.sensor.method.impl.CompletableFutureClientSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.ConnectionSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.ExecutorClientSensorConfig;
 import rocks.inspectit.shared.cs.ci.sensor.method.impl.HttpSensorConfig;
@@ -143,7 +144,9 @@ public enum SensorTypeEnum {
 	/** Apache client exchange handler sensor. */
 	APACHE_CLIENT_EXCHANGE_HANDLER(ApacheClientExchangeHandlerSensorConfig.CLASS_NAME, InspectITImages.IMG_REMOTE, false),
 	/** HTTP async-client sensor for asynchronous tracing via Apache library. */
-	CLOSEABLE_HTTP_ASYNC_CLIENT(CloseableHttpAsyncClientSensorConfig.CLASS_NAME, InspectITImages.IMG_REMOTE, false);
+	CLOSEABLE_HTTP_ASYNC_CLIENT(CloseableHttpAsyncClientSensorConfig.CLASS_NAME, InspectITImages.IMG_REMOTE, false),
+	/** Completable future client sensor for correlating threads via completable futures. */
+	COMPLETABLE_FUTURE_CLIENT(CompletableFutureClientSensorConfig.CLASS_NAME, InspectITImages.IMG_REMOTE, false);
 
 	/**
 	 * The LOOKUP map which is used to get an element of the enumeration when passing the full

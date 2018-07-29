@@ -1,11 +1,15 @@
-package rocks.inspectit.agent.java.sensor.method.async.executor;
+package rocks.inspectit.agent.java.sensor.method.async.future;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.Collections;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,28 +23,23 @@ import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.SpanContextImpl;
 import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.SpanImpl;
 import rocks.inspectit.agent.java.sdk.opentracing.internal.impl.TracerImpl;
 import rocks.inspectit.agent.java.tracing.core.async.SpanStore;
+import rocks.inspectit.agent.java.tracing.core.async.executor.SpanStoreRunnable;
 import rocks.inspectit.agent.java.tracing.core.listener.IAsyncSpanContextListener;
 import rocks.inspectit.shared.all.testbase.TestBase;
 import rocks.inspectit.shared.all.tracing.constants.ExtraTags;
 import rocks.inspectit.shared.all.tracing.data.PropagationType;
 
 /**
- * Tests the {@link ExecutorClientHook] class.
+ * Tests the {@link CompletableFutureClientHook] class.
  *
- * @author Marius Oehler
+ * @author Jacob Waffle
  *
  */
 @SuppressWarnings({ "PMD" })
-public class ExecutorClientHookTest extends TestBase {
+public class CompletableFutureClientHookTest extends TestBase {
 
 	@InjectMocks
-	ExecutorClientHook hook;
-
-	@Mock
-	TracerImpl tracer;
-
-	@Mock
-	IAsyncSpanContextListener asyncListener;
+	CompletableFutureClientHook hook;
 
 	@Mock
 	RegisteredSensorConfig rsc;
@@ -51,18 +50,25 @@ public class ExecutorClientHookTest extends TestBase {
 	@Mock
 	Object result;
 
+	@Mock
+	TracerImpl tracer;
+
+	@Mock
+	IAsyncSpanContextListener asyncListener;
+
 	/**
 	 * Tests the
-	 * {@link ExecutorClientHook#beforeBody(long, long, Object, Object[], rocks.inspectit.agent.java.config.impl.RegisteredSensorConfig)}
+	 * {@link CompletableFutureClientHook#beforeBody(long, long, Object, Object[], rocks.inspectit.agent.java.config.impl.RegisteredSensorConfig)}
 	 * method.
 	 *
 	 */
-	public static class BeforeBody extends ExecutorClientHookTest {
+	public static class BeforeBody extends CompletableFutureClientHookTest {
 
 		@Test
-		public void successful() throws Exception {
-			SpanStore spanStore = mock(SpanStore.class);
-			Object[] parameters = new Object[] { spanStore };
+		public void happyPath() throws Exception {
+			Runnable runnable = mock(Runnable.class);
+			Runnable[] parameters = new Runnable[] { runnable };
+			when(rsc.getParameterTypes()).thenReturn(Collections.singletonList("java.lang.Runnable"));
 			SpanBuilderImpl builder = mock(SpanBuilderImpl.class);
 			SpanImpl span = mock(SpanImpl.class);
 			SpanContextImpl spanContext = mock(SpanContextImpl.class);
@@ -72,7 +78,7 @@ public class ExecutorClientHookTest extends TestBase {
 			when(tracer.isCurrentContextExisting()).thenReturn(true);
 
 			hook.beforeBody(1L, 2L, targetObject, parameters, rsc);
-
+			parameters[0].run();
 			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
 			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, spanContext, false, rsc);
 
@@ -82,22 +88,14 @@ public class ExecutorClientHookTest extends TestBase {
 			verify(builder).withTag(ExtraTags.INSPECTT_METHOD_ID, 1L);
 			verify(builder).withTag(ExtraTags.INSPECTT_SENSOR_ID, 2L);
 			verify(builder).build();
-			verify(spanStore).storeSpan(span);
+			assertThat(parameters[0], isA((Class) SpanStoreRunnable.class));
+			verify(span, times(1)).start();
+			verify(span, times(1)).finish();
+			verify(span, times(1)).context();
+			verify(span, times(1)).isStarted();
+			verify(span, times(1)).isFinished();
 			verify(asyncListener).asyncSpanContextCreated(spanContext);
-			verifyNoMoreInteractions(tracer, builder, spanStore, asyncListener);
-		}
-
-
-		@Test
-		public void parameterIsNoSpanStore() {
-			Object[] parameters = new Object[] { mock(Object.class) };
-
-			hook.beforeBody(0, 0, targetObject, parameters, rsc);
-
-			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
-			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, null, false, rsc);
-
-			verifyZeroInteractions(targetObject, rsc, asyncListener);
+			verifyNoMoreInteractions(tracer, builder, asyncListener);
 		}
 
 		@Test
@@ -113,21 +111,12 @@ public class ExecutorClientHookTest extends TestBase {
 		}
 
 		@Test
-		public void multipleParameters() {
-			Object[] parameters = new Object[] { mock(Object.class), mock(Object.class) };
-
-			hook.beforeBody(0, 0, targetObject, parameters, rsc);
-
-			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
-			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, null, false, rsc);
-
-			verifyZeroInteractions(targetObject, rsc, asyncListener);
-		}
-
-		@Test
 		public void nestedCalls() throws Exception {
-			SpanStore spanStore = mock(SpanStore.class);
-			Object[] parameters = new Object[] { spanStore };
+			Runnable runnable1 = mock(Runnable.class);
+			Runnable runnable2 = mock(Runnable.class);
+			Runnable[] parameters1 = new Runnable[] { runnable1 };
+			Runnable[] parameters2 = new Runnable[] { runnable2 };
+			when(rsc.getParameterTypes()).thenReturn(Collections.singletonList("java.lang.Runnable")).thenReturn(Collections.singletonList("java.lang.Runnable"));
 			SpanBuilderImpl builder = mock(SpanBuilderImpl.class);
 			SpanImpl span = mock(SpanImpl.class);
 			SpanContextImpl spanContext = mock(SpanContextImpl.class);
@@ -136,14 +125,16 @@ public class ExecutorClientHookTest extends TestBase {
 			when(builder.build()).thenReturn(span);
 			when(tracer.isCurrentContextExisting()).thenReturn(true);
 
-			hook.beforeBody(1L, 2L, targetObject, parameters, rsc);
+			hook.beforeBody(1L, 2L, targetObject, parameters1, rsc);
 
-			hook.beforeBody(1L, 2L, targetObject, parameters, rsc);
-			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
-			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, spanContext, false, rsc);
-
-			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
-			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, spanContext, false, rsc);
+			hook.beforeBody(1L, 2L, targetObject, parameters2, rsc);
+			parameters2[0].run();
+			hook.firstAfterBody(1L, 2L, targetObject, parameters2, result, false, rsc);
+			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters2, spanContext, false, rsc);
+			
+			parameters1[0].run();
+			hook.firstAfterBody(1L, 2L, targetObject, parameters1, result, false, rsc);
+			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters1, spanContext, false, rsc);
 
 			verify(tracer).buildSpan(null, References.FOLLOWS_FROM, true);
 			verify(builder).withTag(ExtraTags.PROPAGATION_TYPE, PropagationType.PROCESS.toString());
@@ -151,15 +142,24 @@ public class ExecutorClientHookTest extends TestBase {
 			verify(builder).withTag(ExtraTags.INSPECTT_METHOD_ID, 1L);
 			verify(builder).withTag(ExtraTags.INSPECTT_SENSOR_ID, 2L);
 			verify(builder).build();
-			verify(spanStore).storeSpan(span);
+			assertThat(parameters1[0], isA((Class) SpanStoreRunnable.class));
+			assertThat(parameters2[0], isA((Class) Runnable.class));
+			verify(span, times(1)).start();
+			verify(span, times(1)).finish();
+			verify(span, times(1)).context();
+			verify(span, times(1)).isStarted();
+			verify(span, times(1)).isFinished();
 			verify(asyncListener).asyncSpanContextCreated(spanContext);
-			verifyNoMoreInteractions(tracer, builder, spanStore, asyncListener);
+			verifyNoMoreInteractions(tracer, builder, asyncListener);
 		}
 
 		@Test
 		public void consecutiveCalls() throws Exception {
-			SpanStore spanStore = mock(SpanStore.class);
-			Object[] parameters = new Object[] { spanStore };
+			Runnable runnable1 = mock(Runnable.class);
+			Runnable runnable2 = mock(Runnable.class);
+			Runnable[] parameters1 = new Runnable[] { runnable1 };
+			Runnable[] parameters2 = new Runnable[] { runnable2 };
+			when(rsc.getParameterTypes()).thenReturn(Collections.singletonList("java.lang.Runnable")).thenReturn(Collections.singletonList("java.lang.Runnable"));
 			SpanBuilderImpl builder = mock(SpanBuilderImpl.class);
 			SpanImpl span = mock(SpanImpl.class);
 			SpanContextImpl spanContext = mock(SpanContextImpl.class);
@@ -168,13 +168,15 @@ public class ExecutorClientHookTest extends TestBase {
 			when(builder.build()).thenReturn(span);
 			when(tracer.isCurrentContextExisting()).thenReturn(true);
 
-			hook.beforeBody(1L, 2L, targetObject, parameters, rsc);
-			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
-			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, spanContext, false, rsc);
+			hook.beforeBody(1L, 2L, targetObject, parameters1, rsc);
+			parameters1[0].run();
+			hook.firstAfterBody(1L, 2L, targetObject, parameters1, result, false, rsc);
+			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters1, spanContext, false, rsc);
 
-			hook.beforeBody(1L, 2L, targetObject, parameters, rsc);
-			hook.firstAfterBody(1L, 2L, targetObject, parameters, result, false, rsc);
-			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters, spanContext, false, rsc);
+			hook.beforeBody(1L, 2L, targetObject, parameters2, rsc);
+			parameters2[0].run();
+			hook.firstAfterBody(1L, 2L, targetObject, parameters2, result, false, rsc);
+			hook.secondAfterBody(null, 1L, 2L, targetObject, parameters2, spanContext, false, rsc);
 
 			verify(tracer, times(2)).buildSpan(null, References.FOLLOWS_FROM, true);
 			verify(builder, times(2)).withTag(ExtraTags.PROPAGATION_TYPE, PropagationType.PROCESS.toString());
@@ -182,9 +184,15 @@ public class ExecutorClientHookTest extends TestBase {
 			verify(builder, times(2)).withTag(ExtraTags.INSPECTT_METHOD_ID, 1L);
 			verify(builder, times(2)).withTag(ExtraTags.INSPECTT_SENSOR_ID, 2L);
 			verify(builder, times(2)).build();
-			verify(spanStore, times(2)).storeSpan(span);
+			assertThat(parameters1[0], isA((Class) SpanStoreRunnable.class));
+			assertThat(parameters2[0], isA((Class) SpanStoreRunnable.class));
+			verify(span, times(2)).start();
+			verify(span, times(2)).finish();
+			verify(span, times(2)).context();
+			verify(span, times(2)).isStarted();
+			verify(span, times(2)).isFinished();
 			verify(asyncListener, times(2)).asyncSpanContextCreated(spanContext);
-			verifyNoMoreInteractions(tracer, builder, spanStore, asyncListener);
+			verifyNoMoreInteractions(tracer, builder, asyncListener);
 		}
 	}
 }
